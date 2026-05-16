@@ -2,18 +2,20 @@
 
 A high-win-rate cryptocurrency scalp trading strategy. Currently deployed live on Binance & Bybit futures across 4 production VPS.
 
-**Headline numbers** (27-month backtest, Mar 2024 – May 16 2026, fresh Binance top-100 by volume):
+**Headline numbers — current live strategy (X6X7Opt), last 6 months (Dec 2025 – May 16 2026), Binance top-100 by volume (last run 2026-05-17):**
 
 | Metric | Value |
 |---|---:|
-| Trades | 272 |
-| Win rate | 87.5% |
-| **Compounded profit** | **+969.94%** |
-| $10k → | $106,994 |
-| Worst single month | −5.09% (Aug 2024) |
-| Worst max drawdown | 17.82% (Apr 2024) |
-| Avg max-DD | 2.88% |
-| Best month | +52.15% (Apr 2026) |
+| Trades | 78 |
+| Win rate | 98.7% |
+| **Compounded profit** | **+199.19%** |
+| $10k → | $29,919 |
+| Worst single month | +0.53% (Jan 2026) |
+| Worst max drawdown | 1.19% (May 2026) |
+| Losing months | 0 |
+| Best month | +63.76% (Apr 2026) |
+
+For longer-horizon historical numbers on the previous live strategy (X6X7Exp), see [CLAUDE.md](./CLAUDE.md) — 27-month Mar 2024 – May 16 2026 aggregate was +969.94% / 87.5% WR / 17.82% worst-DD on Exp. The Dec 2025 – May 2026 backtest that motivated the 2026-05-17 switch back to Opt is summarized in [Backtest results](#backtest-results) below.
 
 > **Disclaimer.** Past performance does not predict future results. Crypto futures trading carries substantial risk of loss. This code is provided as-is for educational and research use. You assume all responsibility for any trading you perform.
 
@@ -26,12 +28,13 @@ A high-win-rate cryptocurrency scalp trading strategy. Currently deployed live o
 3. [Strategy architecture](#strategy-architecture)
 4. [Risk management](#risk-management)
 5. [Backtest workflow](#backtest-workflow)
-6. [Live deployment](#live-deployment)
-7. [Project layout](#project-layout)
-8. [Configuration](#configuration)
-9. [Pairlist & blacklist](#pairlist--blacklist)
-10. [Development notes](#development-notes)
-11. [History](#history)
+6. [Backtest results](#backtest-results)
+7. [Live deployment](#live-deployment)
+8. [Project layout](#project-layout)
+9. [Configuration](#configuration)
+10. [Pairlist & blacklist](#pairlist--blacklist)
+11. [Development notes](#development-notes)
+12. [History](#history)
 
 ---
 
@@ -49,7 +52,7 @@ Each entry tag is **prefixed** to identify its parent (e.g., `x6_62`, `x7_45`, `
 - **Timeframe: 5m**. Informative: 15m, 1h, 4h, 1d.
 - **Hard floor**: backstop ladder in `custom_exit` (the class-level `stoploss = -0.10` is inert because X7's `confirm_trade_exit` denies it — see [Risk management](#risk-management)).
 
-The current live strategy is **`NostalgiaScalpProX6X7Exp` version `26.05.16.exp11`**.
+The current live strategy is **`NostalgiaScalpProX6X7Opt`** (deployed 2026-05-17 across all 4 VPS). The previous live strategy `NostalgiaScalpProX6X7Exp v26.05.16.exp11` (2026-05-16 → 2026-05-17) remains on each VPS for rollback — see [Backtest results](#backtest-results) for the comparison that drove the switch.
 
 ---
 
@@ -120,13 +123,14 @@ python3 user_data/scripts/summarize_monthly.py \
 
 ```
 IStrategy (freqtrade base)
-└── NostalgiaScalpProX6X7Opt
+└── NostalgiaScalpProX6X7Opt  ← LIVE BOT (since 2026-05-17)
     │   • Multi-child wrapper instantiating two NFI strategies
     │   • _x6 = NostalgiaForInfinityX6 (restricted to tags 62, 143)
     │   • _x7 = NostalgiaScalpProOptimized (12 ScalpPro tags)
     │   • populate_entry_trend merges signals, prefixes tags x6_/x7_
     │   • Exit callbacks strip prefix and delegate to originating child
-    └── NostalgiaScalpProX6X7Exp  ← live bot
+    │   • No synthetic backstops — losses are decided entirely by the child that owns the trade
+    └── NostalgiaScalpProX6X7Exp  (previously live 2026-05-16 → 2026-05-17; kept for rollback)
         • Adds entry tag 705a (MFI Volume Capitulation)
         • Adds progressive loss-cut for exp_ trades
         • Adds per-pair cooldown + strategy-wide circuit breaker
@@ -267,9 +271,64 @@ python3 user_data/scripts/analyze_tags.py \
 
 ---
 
+## Backtest results
+
+**Last run: 2026-05-17.** Binance top-100 pairlist (refreshed 2026-05-16), data through 2026-05-16 23:25 UTC. Same pairlist + same per-month filter for both strategies.
+
+### X6X7Opt vs X6X7Exp — Dec 2025 → May 16 2026 (per-month)
+
+| Month  | Opt T | Opt WR | Opt P%   | Opt DD | Exp T | Exp WR | Exp P%   | Exp DD | ΔP%     |
+|--------|------:|-------:|---------:|-------:|------:|-------:|---------:|-------:|--------:|
+| 202512 |    16 | 100.0% | +11.58%  |  0.00% |    16 |  62.5% |  −1.62%  |  7.50% | −13.20% |
+| 202601 |     1 | 100.0% |  +0.53%  |  0.00% |     1 | 100.0% |  +0.53%  |  0.00% |   0.00% |
+| 202602 |    17 | 100.0% | +24.57%  |  0.00% |    19 |  78.9% | +15.96%  |  4.35% |  −8.62% |
+| 202603 |     7 | 100.0% |  +9.04%  |  0.00% |     7 | 100.0% |  +9.04%  |  0.00% |   0.00% |
+| 202604 |    24 | 100.0% | +63.76%  |  0.00% |    24 |  91.7% | +52.15%  |  2.85% | −11.60% |
+| 202605 |    13 |  92.3% | +19.93%  |  1.19% |    13 |  84.6% | +14.42%  |  2.59% |  −5.51% |
+
+### Aggregate (6 months)
+
+| Metric            | X6X7Opt        | X6X7Exp        |
+|-------------------|---------------:|---------------:|
+| Trades            | 78             | 80             |
+| Wins / Losses     | 77 / 1         | 66 / 14        |
+| Win rate          | 98.7%          | 82.5%          |
+| Compounded profit | **+199.19%**   | **+117.69%**   |
+| $10k →            | $29,919        | $21,769        |
+| Worst month DD    | 1.19% (May'26) | 7.50% (Dec'25) |
+| Losing months     | 0              | 1 (Dec'25)     |
+
+**Why the gap.** Every Exp loss in this window is a `backstop_*` exit on an x6_/x7_ trade. In Opt, those same trades either recovered (X7's `confirm_trade_exit` denies `stop_loss` — they sit until profit-take or natural exit) or hit `force_exit` at end-of-data with a smaller loss (e.g. AIO/USDT on May 16: Opt `force_exit` −7.23% vs Exp `backstop_4h_10pct` −12.05%). The `exp_705a` tag did not fire once in this window — its WILLR-80 + green-candle filters were not satisfied — so the Exp wrapper contributed pure cost without offsetting tail-event prevention.
+
+**Caveat.** This 6-month sample has no tail events of the type the backstops are designed to catch (no Mar 2026-style cascade, no Apr 2024-style force-exits). The 28-month historical aggregate showed +8,095% on Exp vs ~2,500% on Opt — Exp's edge came specifically from Apr 2024 and Mar 2026. If a stress regime returns, roll back to Exp.
+
+### Reproduce
+
+```bash
+# Refresh top-100 data through today
+freqtrade download-data \
+  --config NostalgiaForInfinity/configs/exampleconfig.json \
+  --config NostalgiaForInfinity/configs/trading_mode-futures.json \
+  --config NostalgiaForInfinity/configs/pairlist-backtest-static-binance-futures-usdt-top100.json \
+  --timerange 20251101- --timeframes 5m 15m 1h 4h 1d \
+  --trading-mode futures --datadir NostalgiaForInfinity/user_data/data
+
+# Run both strategies across the same 6 months
+bash user_data/scripts/run_binance100_backtest.sh NostalgiaScalpProX6X7Opt
+bash user_data/scripts/run_binance100_backtest.sh NostalgiaScalpProX6X7Exp
+
+# Summarize
+python3 user_data/scripts/summarize_monthly.py \
+  --strategy NostalgiaScalpProX6X7Opt --results-dir user_data/backtest_results/binance100
+python3 user_data/scripts/summarize_monthly.py \
+  --strategy NostalgiaScalpProX6X7Exp --results-dir user_data/backtest_results/binance100
+```
+
+---
+
 ## Live deployment
 
-The strategy runs on 4 production VPS (all Tencent Cloud). All four run **the same** `NostalgiaScalpProX6X7Exp` strategy on a dynamic top-75 by volume pairlist with multi-stage filters.
+The strategy runs on 4 production VPS (all Tencent Cloud). All four run **the same** `NostalgiaScalpProX6X7Opt` strategy (since 2026-05-17) on a dynamic top-75 by volume pairlist with multi-stage filters. Previously ran `NostalgiaScalpProX6X7Exp v26.05.16.exp11` from 2026-05-16 to 2026-05-17.
 
 | VPS | Exchange | Container | Role |
 |---|---|---|---|
@@ -470,6 +529,7 @@ See `CLAUDE.md` for a detailed development timeline including the exp9 → exp10
 
 ---
 
-**Strategy version**: `26.05.16.exp11`
-**Last benchmark**: 2026-05-16 (27mo Mar 2024 – May 2026 on Binance top-100)
-**Live deployment**: 4 Tencent VPS (all `26.05.16.exp11`, deployed 2026-05-16 17:13 GMT+8)
+**Strategy version**: `NostalgiaScalpProX6X7Opt 26.04.28.14.22`
+**Last benchmark**: 2026-05-17 (6mo Dec 2025 – May 16 2026, Binance top-100; see [Backtest results](#backtest-results))
+**Live deployment**: 4 Tencent VPS (all `NostalgiaScalpProX6X7Opt`, deployed 2026-05-17 07:44 GMT+8)
+**Previous deployment** (for rollback): `NostalgiaScalpProX6X7Exp 26.05.16.exp11` (2026-05-16 → 2026-05-17)

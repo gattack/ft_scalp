@@ -128,8 +128,8 @@ python3 user_data/scripts/analyze_tags.py --strategy NostalgiaScalpPro \
 | `NostalgiaScalpProOptimized.py` | **Preferred for scalp backtesting** — same signals as ScalpPro, ~40% fewer indicator columns |
 | `NostalgiaScalpPro150.py` | Thin subclass of Optimized for 150-pair runs (distinct filenames) |
 | `NostalgiaScalpProX6X7.py` | Reference copy of X6X7 wrapper (original, non-optimized indicators); do not use for new work |
-| `NostalgiaScalpProX6X7Opt.py` | Optimized X6X7 wrapper (~39% faster indicators); parent class for X6X7Exp |
-| `NostalgiaScalpProX6X7Exp.py` | **Current live bot** — X6X7Opt + tag 705a (MFI Volume Capitulation) with progressive loss cuts and per-pair cooldown |
+| `NostalgiaScalpProX6X7Opt.py` | **Current live bot** (deployed 2026-05-17) — multi-child X6+X7 wrapper, ~39% faster indicators, no synthetic backstops (relies on X6/X7 native exits) |
+| `NostalgiaScalpProX6X7Exp.py` | **Previous live bot** (2026-05-16 → 2026-05-17) — X6X7Opt + tag 705a + progressive loss cuts + per-pair cooldown + backstop ladder. Kept for rollback / reference |
 | `NostalgiaScalpProX5X6X7.py` | Candidate upgrade — adds X5 tag 41 on top of X6X7Opt |
 | `NostalgiaScalpProOptimizedOrig.py` | Archive — pre-optimization snapshot; do not use |
 | `NostalgiaScalpPro_v5_backup.py` | Archive — v5 snapshot; do not use |
@@ -145,8 +145,8 @@ NostalgiaForInfinityX7   (upstream latest, ~77k lines)
               └── NostalgiaScalpPro150   (class rename only, for distinct filenames)
 
 IStrategy (direct)
-  └── NostalgiaScalpProX6X7Opt     (multi-child: X6 tags 62/143 + X7 12 ScalpPro tags)
-        └── NostalgiaScalpProX6X7Exp   ← CURRENT LIVE BOT; adds tag 705a + loss cuts + cooldown
+  └── NostalgiaScalpProX6X7Opt     ← CURRENT LIVE BOT (since 2026-05-17); multi-child X6 tags 62/143 + X7 12 ScalpPro tags
+        └── NostalgiaScalpProX6X7Exp   (previously live 2026-05-16 → 2026-05-17; adds tag 705a + loss cuts + cooldown; kept for rollback)
   └── NostalgiaScalpProX6X7        (reference copy of X6X7Opt, non-optimized; do not use for new work)
   └── NostalgiaScalpProX5X6X7      (candidate upgrade: adds X5 tag 41 on top of X6X7)
   └── NostalgiaCombinedFast        (X6+X7 wrapper, fast-mode tags only, logs features to SQLite)
@@ -157,7 +157,7 @@ IStrategy (direct)
 
 | Goal | Strategy |
 |------|----------|
-| **Live bot (current)** | `NostalgiaScalpProX6X7Exp` |
+| **Live bot (current)** | `NostalgiaScalpProX6X7Opt` |
 | Scalp backtesting (90-pair) | `NostalgiaScalpProOptimized` |
 | Scalp backtesting (150-pair) | `NostalgiaScalpPro150` |
 | Full X7 benchmarking (all conditions + DCA) | `NostalgiaForInfinityX7` |
@@ -178,9 +178,9 @@ These strategies instantiate multiple NFI child instances and merge their signal
 
 **Critical**: Both X6 and X5 children must have `short_entry_signal_params = {}` — their default short conditions reference `RSI_3_change_pct_1h` which `NostalgiaScalpProOptimized` drops. All scalp strategies are long-only.
 
-### NostalgiaScalpProX6X7Exp (live bot) — tag 705a
+### NostalgiaScalpProX6X7Exp (PREVIOUS live bot 2026-05-16 → 2026-05-17) — tag 705a
 
-Current version: **`26.05.16.exp11`** (deployed to all 4 Tencent VPS 2026-05-16).
+Last deployed version: **`26.05.16.exp11`** (deployed to all 4 Tencent VPS 2026-05-16, replaced 2026-05-17 by X6X7Opt). Reason for rollback to Opt: a 6-month Dec 2025 – May 16 2026 backtest (run 2026-05-17) showed Opt at +199.19% compounded / 98.7% WR / 1.19% worst-DD vs Exp at +117.69% / 82.5% WR / 7.50% worst-DD — the backstop ladder fired 14 times on losers that the X7 child would have exited at smaller losses or held to recovery. The exp_705a tag itself never fired in this window (WILLR + green-candle filters), so it contributed zero upside. Switch back to Exp if a tail-risk regime returns and the backstops start paying for themselves; the 28-month historical aggregate (+8,095% on Exp vs ~2,500% on Opt) was driven by Apr 2024 / Mar 2026 stress events that aren't present in the current window.
 
 Tag 705a (MFI Volume Capitulation) adds a mean-reversion scalp on top of X6X7Opt. Entry conditions use only columns already computed by `NostalgiaScalpProOptimized`:
 
@@ -274,7 +274,7 @@ Filename convention: `backtest_{STRATEGY}_{YYYYMM}.zip`. Results are `.zip` (fre
 
 ## VPS live deployment
 
-**Four managed live servers — all Tencent.** All run `NostalgiaScalpProX6X7Exp`. Use `docker compose restart` for strategy-only deploys; `docker compose up -d --force-recreate` when `docker-compose.yml` command line changes. The Alibaba VPS (`109.199.110.135`) that previously hosted `freqtrade_scalp` plus single-coin bots (ETH/XRP/SOL/XAUT/HYPE/mix) was retired 2026-05-15 — do not deploy or audit there.
+**Four managed live servers — all Tencent.** All run `NostalgiaScalpProX6X7Opt` (since 2026-05-17). Previously ran `NostalgiaScalpProX6X7Exp v26.05.16.exp11` (2026-05-16 → 2026-05-17). Use `docker compose restart` for strategy-only deploys; `docker compose up -d --force-recreate` when `docker-compose.yml` command line changes. The Alibaba VPS (`109.199.110.135`) that previously hosted `freqtrade_scalp` plus single-coin bots (ETH/XRP/SOL/XAUT/HYPE/mix) was retired 2026-05-15 — do not deploy or audit there.
 
 | VPS | Exchange | Container | Role |
 |-----|----------|-----------|------|
@@ -418,8 +418,27 @@ Run `python3 user_data/scripts/summarize_monthly.py` for current results. Histor
 | NostalgiaScalpPro | Jan24–Mar26 (27mo) | Bybit top-100 | 214 | 99.5% | +909% | 11.02% |
 | NostalgiaScalpProX6X7 | Jan24–Mar26 (27mo) | Binance top-100 | 296 | 99.3% | +4,439% | 2.22% |
 | NostalgiaScalpProX6X7Exp (exp9, stale pairlist) | Jan24–Apr26 (28mo) | Binance top-100 | 331 | 99.4% | +8,095% | 7.64% |
-| **NostalgiaScalpProX6X7Exp (exp11)** | **Mar24–May26 (27mo)** | **Binance top-100 (refreshed 2026-05-16)** | **272** | **87.5%** | **+969.94%** | **17.82% (Apr24)** |
+| NostalgiaScalpProX6X7Exp (exp11) | Mar24–May26 (27mo) | Binance top-100 (refreshed 2026-05-16) | 272 | 87.5% | +969.94% | 17.82% (Apr24) |
+| **NostalgiaScalpProX6X7Opt** | **Dec25–May26 (6mo)** | **Binance top-100 (refreshed 2026-05-16)** | **78** | **98.7%** | **+199.19%** | **1.19% (May26)** |
+| NostalgiaScalpProX6X7Exp (exp11) | Dec25–May26 (6mo) | Binance top-100 (refreshed 2026-05-16) | 80 | 82.5% | +117.69% | 7.50% (Dec25) |
 | NostalgiaForInfinityX5 | May21–Mar26 (59mo) | Binance top-100 | 1,245 | 94.4% | +149,656% | 58.59% |
+
+### Latest backtest comparison — X6X7Opt vs X6X7Exp (last 6 months)
+
+**Last run: 2026-05-17.** Binance top-100 pairlist (refreshed 2026-05-16), data through 2026-05-16 23:25 UTC. Same pairlist + same per-month filter for both strategies.
+
+| Month  | Opt T | Opt WR | Opt P%   | Opt DD | Exp T | Exp WR | Exp P%   | Exp DD | ΔP%     |
+|--------|------:|-------:|---------:|-------:|------:|-------:|---------:|-------:|--------:|
+| 202512 |    16 | 100.0% | +11.58%  |  0.00% |    16 |  62.5% |  −1.62%  |  7.50% | −13.20% |
+| 202601 |     1 | 100.0% |  +0.53%  |  0.00% |     1 | 100.0% |  +0.53%  |  0.00% |   0.00% |
+| 202602 |    17 | 100.0% | +24.57%  |  0.00% |    19 |  78.9% | +15.96%  |  4.35% |  −8.62% |
+| 202603 |     7 | 100.0% |  +9.04%  |  0.00% |     7 | 100.0% |  +9.04%  |  0.00% |   0.00% |
+| 202604 |    24 | 100.0% | +63.76%  |  0.00% |    24 |  91.7% | +52.15%  |  2.85% | −11.60% |
+| 202605 |    13 |  92.3% | +19.93%  |  1.19% |    13 |  84.6% | +14.42%  |  2.59% |  −5.51% |
+
+**Aggregate (6 months):** Opt 77W/1L (98.7% WR, compounded +199.19%, worst-DD 1.19%, 0 losing months) vs Exp 66W/14L (82.5% WR, compounded +117.69%, worst-DD 7.50%, 1 losing month — Dec'25). The 81pp gap is entirely the backstop ladder: every Exp loss is a `backstop_*` exit on x6_/x7_ trades that X6X7Opt held (and either recovered, or ended with a smaller force_exit at end-of-data). The `exp_705a` tag did not fire once in this window (WILLR + green-candle filters), so the Exp wrapper added pure cost without offsetting tail-event prevention.
+
+Decision (2026-05-17): switched all 4 Tencent VPS from X6X7Exp → X6X7Opt. Rollback to Exp if a stress regime returns (Mar 2026-style cascade or Apr 2024-style force-exits) and the backstops start saving trades.
 
 **Exchange comparison (12-month Apr25–Mar26):** Bybit-100 +252%, Binance-100 +260%, Binance-150 +518% (but 39% DD spike — not suitable for live). Binance-100 recommended for live: better DD control (2.13% worst month).
 
