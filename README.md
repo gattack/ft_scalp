@@ -1,6 +1,6 @@
 # ft_scalp — NostalgiaForInfinity X6/X7 Scalp Strategy
 
-A high-win-rate cryptocurrency scalp trading strategy for [Freqtrade](https://www.freqtrade.io/), built on top of the [NostalgiaForInfinity](https://github.com/iterativv/NostalgiaForInfinity) (NFI) X6/X7 strategies. Currently deployed live on Binance & Bybit futures across 4 production VPS.
+A high-win-rate cryptocurrency scalp trading strategy. Currently deployed live on Binance & Bybit futures across 4 production VPS.
 
 **Headline numbers** (27-month backtest, Mar 2024 – May 16 2026, fresh Binance top-100 by volume):
 
@@ -31,7 +31,7 @@ A high-win-rate cryptocurrency scalp trading strategy for [Freqtrade](https://ww
 8. [Configuration](#configuration)
 9. [Pairlist & blacklist](#pairlist--blacklist)
 10. [Development notes](#development-notes)
-11. [Credits & references](#credits--references)
+11. [History](#history)
 
 ---
 
@@ -58,8 +58,8 @@ The current live strategy is **`NostalgiaScalpProX6X7Exp` version `26.05.16.exp1
 ### Prerequisites
 
 - Python 3.12+
-- [freqtrade](https://www.freqtrade.io/) (tested with 2026.2-dev / 2026.4)
-- [NostalgiaForInfinity](https://github.com/iterativv/NostalgiaForInfinity) checked out alongside this repo (see [Setup](#setup))
+- freqtrade (tested with 2026.2-dev / 2026.4)
+- The upstream strategy repo checked out alongside this one (see [Setup](#setup))
 
 ### Setup
 
@@ -464,13 +464,7 @@ pytest tests/unit/ -v
 
 ---
 
-## Credits & references
-
-- **[NostalgiaForInfinity](https://github.com/iterativv/NostalgiaForInfinity)** — the upstream NFI strategies on which this is built. All credit for X5/X6/X7 entry logic and indicator architecture goes there.
-- **[Freqtrade](https://www.freqtrade.io/)** — the trading bot framework.
-- Tag 705a entry conditions were developed in this repo (Mar–May 2026).
-
-### History
+## History
 
 See `CLAUDE.md` for a detailed development timeline including the exp9 → exp10 → exp11 progression, the Apr 2024 pairlist deep-dive, and the multi-child architecture rationale.
 
