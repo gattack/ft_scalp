@@ -1,0 +1,96 @@
+# Credentials & local config (NEVER commit)
+.credentials.local
+.env
+.env.*
+*.local
+secrets.json
+credentials.json
+api_keys.*
+
+# Python build artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg
+*.egg-info/
+.eggs/
+build/
+dist/
+*.whl
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Virtualenvs
+.venv/
+venv/
+env/
+ENV/
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*.bak
+.DS_Store
+Thumbs.db
+
+# Freqtrade data — far too large for git, regenerate via download scripts
+**/*.feather
+**/*.feather.tmp
+user_data/data/
+NostalgiaForInfinity/user_data/data/
+
+# Freqtrade backtest results (zips, meta JSON, market_change feathers) — regenerable
+user_data/backtest_results/
+backtest_results/
+
+# Freqtrade ML models / SQLite logs — regenerable / privacy-sensitive
+user_data/models/
+user_data/logs/
+user_data/notebooks/
+*.sqlite
+*.sqlite-journal
+*.db
+
+# NostalgiaForInfinity upstream repo — clone separately
+# (Keeping local strategy copies in user_data/strategies/ is enough.)
+NostalgiaForInfinity/
+
+# Working / scratch dirs
+tmp/
+.tmp/
+scratch/
+
+# In-repo strategy backups (we rotate these in-place during development)
+user_data/strategies/.backup/
+user_data/strategies/_backup_*/
+user_data/strategies/__pycache__/
+user_data/_strategies_backup_*/
+
+# OpenWolf in-repo files (kept locally only)
+.wolf/
+.openwolf/
+
+# Claude / agent harness state
+.claude/
+.aider*
+
+# Misc binary / archive artifacts
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.7z
+
+# OS noise
+*.log
+*.log.*
+nohup.out
+core
+*.core
