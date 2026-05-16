@@ -438,6 +438,14 @@ Run `python3 user_data/scripts/summarize_monthly.py` for current results. Histor
 
 **Aggregate (6 months):** Opt 77W/1L (98.7% WR, compounded +199.19%, worst-DD 1.19%, 0 losing months) vs Exp 66W/14L (82.5% WR, compounded +117.69%, worst-DD 7.50%, 1 losing month — Dec'25). The 81pp gap is entirely the backstop ladder: every Exp loss is a `backstop_*` exit on x6_/x7_ trades that X6X7Opt held (and either recovered, or ended with a smaller force_exit at end-of-data). The `exp_705a` tag did not fire once in this window (WILLR + green-candle filters), so the Exp wrapper added pure cost without offsetting tail-event prevention.
 
+**Per-month notes:**
+- **Dec'25** (−13.20pp gap): same 16 entries; Exp backstopped 6 (MON, UNI, LDO, ARB×2, DOGS); Opt held all to recovery.
+- **Jan'26** (0pp): 1 trade (BTC), identical for both.
+- **Feb'26** (−8.62pp): COLLECT alone triggered 3 Exp backstops (−16.95%, −16.09%, −15.59%); plus UNI −13.20% backstop.
+- **Mar'26** (0pp): 7 trades each, no backstops fired.
+- **Apr'26** (−11.60pp, both strategies' best month): Exp lost on SAGA (`backstop_1h_15pct` −15.73%) and AKE (`backstop_1h_15pct` −17.28%); Opt held both.
+- **May'26** (−5.51pp, partial through May 16 23:25): Exp lost on SKYAI (`backstop_1h_15pct` −15.68%) and AIO (`backstop_4h_10pct` −12.05%); Opt lost only on AIO (`force_exit` −7.23% at end-of-data).
+
 Decision (2026-05-17): switched all 4 Tencent VPS from X6X7Exp → X6X7Opt. Rollback to Exp if a stress regime returns (Mar 2026-style cascade or Apr 2024-style force-exits) and the backstops start saving trades.
 
 **Exchange comparison (12-month Apr25–Mar26):** Bybit-100 +252%, Binance-100 +260%, Binance-150 +518% (but 39% DD spike — not suitable for live). Binance-100 recommended for live: better DD control (2.13% worst month).

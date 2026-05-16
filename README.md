@@ -286,6 +286,17 @@ python3 user_data/scripts/analyze_tags.py \
 | 202604 |    24 | 100.0% | +63.76%  |  0.00% |    24 |  91.7% | +52.15%  |  2.85% | −11.60% |
 | 202605 |    13 |  92.3% | +19.93%  |  1.19% |    13 |  84.6% | +14.42%  |  2.59% |  −5.51% |
 
+### Per-month notes
+
+- **Dec 2025 (202512)** — biggest single-month gap (−13.20pp). Same 16 entries for both strategies. Exp closed 6 trades via the backstop ladder (1× `backstop_1h_15pct` on MON, 2× `backstop_4h_10pct` on UNI/LDO, 2× `backstop_12h_5pct` on ARB/DOGS, 1× `backstop_4h_10pct` on ARB-x7_163). Opt held all 16 to recovery → 100% WR.
+- **Jan 2026 (202601)** — quiet month. 1 trade (BTC, x6_62), identical exit for both. Zero gap.
+- **Feb 2026 (202602)** — −8.62pp gap driven by **COLLECT/USDT** alone: Exp force-closed it 3× on backstop firings (`x7_5 −16.95%`, `x7_42 −16.09%`, `x6_62 −15.59%`), plus one `x6_62 backstop_4h_10pct` on UNI (−13.20%). Opt's same entries either recovered or X7's `confirm_trade_exit` denied the synthetic stops.
+- **Mar 2026 (202603)** — 7 trades each, identical exits, no backstop firings. Zero gap.
+- **Apr 2026 (202604)** — strongest month for both strategies in absolute terms (Opt +63.76%, Exp +52.15%). 24 entries each; Exp lost on 2 (`x7_45 SAGA backstop_1h_15pct −15.73%`, `x7_42 AKE backstop_1h_15pct −17.28%`). Opt held both to recovery → 100% WR.
+- **May 2026 (202605, partial through May 16 23:25 UTC)** — 13 trades each. Exp lost 2: `x7_5 SKYAI backstop_1h_15pct −15.68%` early in month, and `x7_42 AIO backstop_4h_10pct −12.05%` on May 16. Opt lost 1: same AIO trade exited via `force_exit −7.23%` at end-of-data (the only Opt loss in the whole 6-month window).
+
+**Pattern.** Every single Exp loss in the entire 6-month window is a `backstop_*` exit. Every single Opt loss is either a recovery (still open at month-end with positive ratio) or a `force_exit` at end-of-data. The `exp_705a` tag never fired — its WILLR-80 + green-candle filters were not met by any pair in this window.
+
 ### Aggregate (6 months)
 
 | Metric            | X6X7Opt        | X6X7Exp        |
